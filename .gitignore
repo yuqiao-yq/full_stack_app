@@ -1,0 +1,24 @@
+# frontend
+fe/node_modules/
+fe/dist/
+fe/dist-ssr/
+fe/logs
+fe/*.log
+fe/npm-debug.log*
+fe/yarn-debug.log*
+fe/yarn-error.log*
+fe/pnpm-debug.log*
+fe/lerna-debug.log*
+fe/*.local
+
+# backend
+be/.venv/
+be/__pycache__/
+be/*.pyc
+be/.env
+be/.env.*
+
+# editor and system
+.DS_Store
+*.swp
+*.swo
