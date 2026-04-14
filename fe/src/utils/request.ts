@@ -1,13 +1,31 @@
 import axios, { type AxiosError, type AxiosRequestConfig } from 'axios'
+import { clearToken, getToken } from './auth'
+import { buildLoginRedirectPath } from './navigation'
 
 const service = axios.create({
   baseURL: '/api',
   timeout: 10000,
 })
 
+service.interceptors.request.use((config) => {
+  const token = getToken()
+
+  if (token) {
+    config.headers = config.headers ?? {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+
+  return config
+})
+
 service.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ message?: string }>) => {
+    if (error.response?.status === 401) {
+      clearToken()
+      window.location.replace(buildLoginRedirectPath())
+    }
+
     const message =
       error.response?.data?.message ?? error.message ?? 'Request failed'
 
@@ -30,4 +48,5 @@ const http = {
   },
 }
 
+export { service }
 export default http
