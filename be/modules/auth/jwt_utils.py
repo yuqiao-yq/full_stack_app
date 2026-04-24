@@ -4,8 +4,8 @@ from functools import wraps
 import jwt
 from flask import current_app, g, jsonify, request
 
-from extensions import db
-from models.user import User
+from core.extensions import db
+from modules.auth.models import User
 
 
 def unauthorized(message, status_code=401):

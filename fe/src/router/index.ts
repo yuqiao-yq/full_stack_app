@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
-import { useAuthStore } from '../stores/auth'
-import { pinia } from '../stores'
+import HomeView from '../features/home/pages/HomeView.vue'
+import LoginView from '../features/auth/pages/LoginView.vue'
+import MyView from '../features/profile/pages/MyView.vue'
+import RegisterView from '../features/auth/pages/RegisterView.vue'
+import { useAuthStore } from '../features/auth/store/auth'
+import { pinia } from '../app/pinia'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -18,6 +19,12 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+    },
+    {
+      path: '/my',
+      name: 'my',
+      component: MyView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/register',

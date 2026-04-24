@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 
 from dotenv import load_dotenv
 
-load_dotenv(Path(__file__).resolve().parent / ".env")
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 
 def _build_database_uri():
@@ -26,5 +26,12 @@ class Config:
     JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-key")
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
     JWT_EXPIRES_IN_HOURS = int(os.getenv("JWT_EXPIRES_IN_HOURS", "24"))
+    IGDB_CLIENT_ID = os.getenv("IGDB_CLIENT_ID", "")
+    IGDB_CLIENT_SECRET = os.getenv("IGDB_CLIENT_SECRET", "")
+    IGDB_AUTH_URL = os.getenv(
+        "IGDB_AUTH_URL",
+        "https://id.twitch.tv/oauth2/token",
+    )
+    IGDB_BASE_URL = os.getenv("IGDB_BASE_URL", "https://api.igdb.com/v4")
     SQLALCHEMY_DATABASE_URI = _build_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False

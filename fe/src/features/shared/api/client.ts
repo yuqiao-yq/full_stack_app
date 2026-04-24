@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type AxiosRequestConfig } from 'axios'
-import { clearToken, getToken } from './auth'
-import { buildLoginRedirectPath } from './navigation'
+import { clearToken, getToken } from '../../auth/lib/tokenStorage'
+import { buildLoginRedirectPath } from '../../auth/lib/navigation'
 
 const service = axios.create({
   baseURL: '/api',

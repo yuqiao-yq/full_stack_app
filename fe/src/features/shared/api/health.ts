@@ -1,4 +1,4 @@
-import http from '../utils/request'
+import http from './client'
 
 export interface HealthResponse {
   message: string

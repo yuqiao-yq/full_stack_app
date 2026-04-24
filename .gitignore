@@ -14,6 +14,7 @@ fe/*.local
 # backend
 be/.venv/
 be/__pycache__/
+be/.pycache_tmp/
 be/*.pyc
 be/.env
 be/.env.*

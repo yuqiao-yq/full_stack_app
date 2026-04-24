@@ -2,8 +2,8 @@ import re
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from extensions import db
-from models.user import User
+from core.extensions import db
+from modules.auth.models import User
 
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_]{3,20}$")
 PASSWORD_LETTER_PATTERN = re.compile(r"[A-Za-z]")

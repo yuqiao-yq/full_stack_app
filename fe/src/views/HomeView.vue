@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { getHealth } from '../api/health'
-import { useAuthStore } from '../stores/auth'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '../features/auth/store/auth'
+import { getHealth } from '../features/shared/api/health'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const healthMessage = ref('同步中')
@@ -103,11 +104,23 @@ const rankingList = [
   { rank: '05', name: '魔法方块', hot: '88.9' },
 ]
 
+const navLinks = [
+  { label: '首页', to: { name: 'home' } },
+  { label: '游戏库', to: { name: 'home' } },
+  { label: '排行榜', to: { name: 'home' } },
+  { label: '资讯', to: { name: 'home' } },
+  { label: '我的', to: { name: 'my' } },
+]
+
 const currentSlide = computed(() => heroSlides[activeSlideIndex.value])
 
 const displayName = computed(
   () => authStore.user?.name || authStore.user?.username || 'User',
 )
+
+function isActiveNav(name: string) {
+  return route.name === name
+}
 
 let slideTimer: number | undefined
 
@@ -160,11 +173,15 @@ onUnmounted(() => {
         </div>
 
         <nav class="portal-nav" aria-label="Primary">
-          <a class="portal-nav__link portal-nav__link--active" href="/">首页</a>
-          <a class="portal-nav__link" href="/">游戏库</a>
-          <a class="portal-nav__link" href="/">排行榜</a>
-          <a class="portal-nav__link" href="/">资讯</a>
-          <a class="portal-nav__link" href="/">关于</a>
+          <RouterLink
+            v-for="link in navLinks"
+            :key="link.label"
+            class="portal-nav__link"
+            :class="{ 'portal-nav__link--active': isActiveNav(String(link.to.name)) }"
+            :to="link.to"
+          >
+            {{ link.label }}
+          </RouterLink>
         </nav>
 
         <div class="portal-actions">

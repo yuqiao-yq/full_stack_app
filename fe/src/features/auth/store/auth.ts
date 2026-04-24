@@ -9,7 +9,7 @@ import {
   type LoginResponse,
   type RegisterPayload,
 } from '../api/auth'
-import { clearToken, getToken, setToken } from '../utils/auth'
+import { clearToken, getToken, setToken } from '../lib/tokenStorage'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(getToken())

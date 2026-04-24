@@ -101,9 +101,28 @@ MYSQL_DATABASE=full_stack_app
 JWT_SECRET=dev-secret-key
 JWT_ALGORITHM=HS256
 JWT_EXPIRES_IN_HOURS=24
+IGDB_CLIENT_ID=
+IGDB_CLIENT_SECRET=
+IGDB_AUTH_URL=https://id.twitch.tv/oauth2/token
+IGDB_BASE_URL=https://api.igdb.com/v4
 ```
 
 如果你要修改数据库账号或密码，更新 `be/.env` 即可。
+
+如果你要启用“我的评价”中的游戏搜索功能，还需要在 `be/.env` 中填写 IGDB/Twitch 凭证：
+
+- `IGDB_CLIENT_ID`
+- `IGDB_CLIENT_SECRET`
+
+申请方式：
+
+1. 打开 [Twitch Developer Console](https://dev.twitch.tv/console/apps)
+2. 创建一个新的应用
+3. 拿到 `Client ID`
+4. 在应用详情里生成或查看 `Client Secret`
+
+后端会先通过 Twitch OAuth 获取 access token，再代理请求 IGDB 的游戏搜索接口。
+如果凭证未配置，`/api/games/search` 会返回明确错误提示，而不会直接崩溃。
 
 ## 启动项目
 
@@ -174,6 +193,52 @@ VITE_API_PROXY_TARGET=http://localhost:8080 npm run dev
 - 密码使用哈希加密存储，不是明文
 - JWT 默认有效期为 `24` 小时
 
+## 游戏搜索与评价
+
+- “我的评价”支持通过第三方游戏数据库搜索游戏信息
+- 当前后端通过 Flask 代理 `IGDB API`
+- 前端不会直接暴露第三方 API key
+- 搜索结果会带回封面图、平台、类型、评分、发布日期、简介摘要等基础信息
+- 当你提交评价时，会把这些游戏信息快照和你的本地评价一起写入 MySQL
+
+启用前请确认：
+
+```env
+IGDB_CLIENT_ID=你的TWITCH_CLIENT_ID
+IGDB_CLIENT_SECRET=你的TWITCH_CLIENT_SECRET
+```
+
+评价数据会保存在本地数据库的 `game_reviews` 表中。
+
+## 当前目录结构
+
+后端已按功能模块整理为：
+
+```text
+be/
+  core/
+  modules/
+    auth/
+    games/
+      providers/
+    reviews/
+```
+
+前端已按应用入口与功能模块整理为：
+
+```text
+fe/src/
+  app/
+  router/
+  features/
+    auth/
+    games/
+    home/
+    profile/
+    reviews/
+    shared/
+```
+
 ## 常见命令
 
 查看 MySQL 容器状态：
@@ -193,4 +258,5 @@ docker exec -it full-stack-mysql mysql -uroot -p123456
 ```sql
 USE full_stack_app;
 SELECT id, username, display_name, password_hash, created_at FROM users;
+SELECT id, user_id, game_name, status, user_score, created_at FROM game_reviews;
 ```

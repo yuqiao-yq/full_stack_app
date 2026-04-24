@@ -1,8 +1,13 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from config import Config
-from extensions import db
-from routes.auth import auth_bp
+from core.config import Config
+from core.extensions import db
+from modules.auth.routes import auth_bp
+from modules.games.routes import games_bp
+from modules.reviews.routes import reviews_bp
+
+import modules.auth.models  # noqa: F401
+import modules.reviews.models  # noqa: F401
 
 
 def create_app():
@@ -12,6 +17,8 @@ def create_app():
 
     db.init_app(app)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(games_bp)
+    app.register_blueprint(reviews_bp)
 
     @app.get("/api/health")
     def health():

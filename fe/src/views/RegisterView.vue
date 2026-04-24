@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { resolveRedirectPath } from '../utils/navigation'
+import { useAuthStore } from '../features/auth/store/auth'
+import { resolveRedirectPath } from '../features/auth/lib/navigation'
 
 const router = useRouter()
 const route = useRoute()
