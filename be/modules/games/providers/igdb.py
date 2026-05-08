@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
@@ -12,12 +13,111 @@ _token_cache = {
     "expires_at": 0.0,
 }
 
+_translation_cache = {}
+
+PLATFORM_TRANSLATIONS = {
+    "PC (Microsoft Windows)": "PC",
+    "Mac": "Mac",
+    "Linux": "Linux",
+    "Nintendo Switch": "任天堂 Switch",
+    "Nintendo Switch 2": "任天堂 Switch 2",
+    "PlayStation 4": "PlayStation 4",
+    "PlayStation 5": "PlayStation 5",
+    "PlayStation VR2": "PlayStation VR2",
+    "Xbox One": "Xbox One",
+    "Xbox Series X|S": "Xbox Series X|S",
+    "iOS": "iOS",
+    "Android": "Android",
+    "Web browser": "网页",
+}
+
+GENRE_TRANSLATIONS = {
+    "Adventure": "冒险",
+    "Arcade": "街机",
+    "Card & Board Game": "卡牌桌游",
+    "Fighting": "格斗",
+    "Hack and slash/Beat 'em up": "砍杀",
+    "Indie": "独立",
+    "MOBA": "多人在线战术竞技",
+    "Music": "音乐",
+    "Pinball": "弹球",
+    "Platform": "平台跳跃",
+    "Point-and-click": "点击冒险",
+    "Puzzle": "益智",
+    "Quiz/Trivia": "问答",
+    "Racing": "竞速",
+    "Real Time Strategy (RTS)": "即时战略",
+    "Role-playing (RPG)": "角色扮演",
+    "Shooter": "射击",
+    "Simulator": "模拟",
+    "Sport": "体育",
+    "Strategy": "策略",
+    "Tactical": "战术",
+    "Turn-based strategy (TBS)": "回合策略",
+    "Visual Novel": "视觉小说",
+}
+
 
 class GameProviderError(Exception):
     def __init__(self, message, status_code=502):
         super().__init__(message)
         self.message = message
         self.status_code = status_code
+
+
+def _contains_cjk(value):
+    return bool(re.search(r"[\u4e00-\u9fff]", value or ""))
+
+
+def _localize_platform_name(name):
+    return PLATFORM_TRANSLATIONS.get(name, name)
+
+
+def _localize_genre_name(name):
+    return GENRE_TRANSLATIONS.get(name, name)
+
+
+def _translate_text_to_zh(text):
+    cleaned_text = (text or "").strip()
+    if not cleaned_text:
+        return None
+
+    if _contains_cjk(cleaned_text):
+        return cleaned_text
+
+    cached = _translation_cache.get(cleaned_text)
+    if cached is not None:
+        return cached
+
+    params = urlencode(
+        {
+            "client": "gtx",
+            "sl": "auto",
+            "tl": "zh-CN",
+            "dt": "t",
+            "q": cleaned_text,
+        }
+    )
+    request = Request(
+        f"https://translate.googleapis.com/translate_a/single?{params}",
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "full-stack-app/1.0",
+        },
+    )
+
+    try:
+        with urlopen(request, timeout=10) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (HTTPError, URLError, json.JSONDecodeError):
+        _translation_cache[cleaned_text] = None
+        return None
+
+    translated_text = "".join(
+        part[0] for part in payload[0] if isinstance(part, list) and part and part[0]
+    ).strip()
+    _translation_cache[cleaned_text] = translated_text or None
+    return _translation_cache[cleaned_text]
 
 
 def _format_release_date(timestamp):
@@ -36,19 +136,28 @@ def _build_cover_url(cover):
 
 
 def _normalize_game(raw_game):
+    name = raw_game["name"]
+    summary = raw_game.get("summary")
+
     return {
         "externalGameId": str(raw_game["id"]),
-        "name": raw_game["name"],
+        "name": name,
+        "nameZh": _translate_text_to_zh(name),
         "coverUrl": _build_cover_url(raw_game.get("cover")),
         "released": _format_release_date(raw_game.get("first_release_date")),
         "rating": round(raw_game["rating"], 1) if raw_game.get("rating") else None,
         "platforms": [
-            item["name"] for item in raw_game.get("platforms", []) if item.get("name")
+            _localize_platform_name(item["name"])
+            for item in raw_game.get("platforms", [])
+            if item.get("name")
         ],
         "genres": [
-            item["name"] for item in raw_game.get("genres", []) if item.get("name")
+            _localize_genre_name(item["name"])
+            for item in raw_game.get("genres", [])
+            if item.get("name")
         ],
-        "summary": raw_game.get("summary"),
+        "summary": summary,
+        "summaryZh": _translate_text_to_zh(summary),
     }
 
 

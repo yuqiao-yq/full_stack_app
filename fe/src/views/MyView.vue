@@ -142,6 +142,14 @@ function formatReviewDate(value: string) {
   })
 }
 
+function getGameSummary(game: GameSearchResult) {
+  return game.summaryZh || game.summary || '暂无游戏简介'
+}
+
+function getGameDisplayName(game: GameSearchResult) {
+  return game.nameZh || game.name
+}
+
 async function fetchMyReviews() {
   isLoadingReviews.value = true
 
@@ -212,7 +220,7 @@ async function handleSubmitReview() {
   try {
     await createReview({
       externalGameId: selectedGame.value.externalGameId,
-      gameName: selectedGame.value.name,
+      gameName: getGameDisplayName(selectedGame.value),
       coverUrl: selectedGame.value.coverUrl,
       platforms: selectedGame.value.platforms,
       genres: selectedGame.value.genres,
@@ -409,7 +417,7 @@ onMounted(async () => {
                       "
                     ></div>
                     <div class="search-result-card__body">
-                      <h3>{{ game.name }}</h3>
+                      <h3>{{ getGameDisplayName(game) }}</h3>
                       <p>
                         {{ game.platforms.join(' / ') || '平台信息待补充' }}
                       </p>
@@ -417,7 +425,7 @@ onMounted(async () => {
                         评分 {{ game.rating ?? '--' }} · 上线
                         {{ game.released || '未知' }}
                       </p>
-                      <p>{{ game.summary || '暂无游戏简介' }}</p>
+                      <p>{{ getGameSummary(game) }}</p>
                     </div>
                   </article>
 
@@ -442,11 +450,11 @@ onMounted(async () => {
                       "
                     ></div>
                     <div class="selected-game-card__body">
-                      <h3>{{ selectedGame.name }}</h3>
+                      <h3>{{ getGameDisplayName(selectedGame) }}</h3>
                       <p>平台：{{ selectedGame.platforms.join(' / ') || '未知' }}</p>
                       <p>类型：{{ selectedGame.genres.join(' / ') || '未知' }}</p>
                       <p class="selected-game-card__summary">
-                        {{ selectedGame.summary || '暂无游戏简介' }}
+                        {{ getGameSummary(selectedGame) }}
                       </p>
                       <p>
                         IGDB 评分：{{ selectedGame.rating ?? '--' }} · 发售：
